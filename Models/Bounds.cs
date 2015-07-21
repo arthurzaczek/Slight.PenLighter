@@ -1,16 +1,15 @@
-﻿using System.Runtime.InteropServices;
-
-namespace SlightPenLighter.Models {
+﻿namespace SlightPenLighter.Models
+{
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.InteropServices;
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct Bounds {
-
-        // ReSharper disable UnassignedField.Global
+    [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
+    public struct Bounds
+    {
         public int Left;
         public int Top;
         public int Right;
         public int Bottom;
-        // ReSharper restore UnassignedField.Global
     }
-
 }

@@ -1,22 +1,16 @@
-﻿using System;
-using SlightPenLighter.Models;
-using SlightPenLighter.UI;
-
-namespace SlightPenLighter.Hooks
+﻿namespace SlightPenLighter.Hooks
 {
+    using System;
+    using System.Windows.Threading;
+
+    using SlightPenLighter.Models;
+    using SlightPenLighter.UI;
+
     public class MouseTracker
     {
-        public IntPtr WindowPointer
-        {
-            get;
-            set;
-        }
+        public IntPtr WindowPointer { get; set; }
 
-        public PenHighlighter Highlighter
-        {
-            get;
-            private set;
-        }
+        public PenHighlighter Highlighter { get; private set; }
 
         public MouseTracker(IntPtr window, PenHighlighter highlighter)
         {
@@ -33,8 +27,8 @@ namespace SlightPenLighter.Hooks
 
         private void HookManagerOnMouseClick()
         {
-            Highlighter.PulseClick = true;
-            Highlighter.Dispatcher.Invoke(() => Highlighter.PulseClick = false, System.Windows.Threading.DispatcherPriority.Background);
+            Highlighter.ClickEvent = true;
+            Highlighter.Dispatcher.Invoke(() => Highlighter.ClickEvent = false, DispatcherPriority.Background);
         }
     }
 }

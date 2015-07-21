@@ -1,58 +1,46 @@
-﻿using System;
-using System.ComponentModel;
-using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Windows.Threading;
-using SlightPenLighter.Hooks;
-using SlightPenLighter.Models;
-
-namespace SlightPenLighter.UI
+﻿namespace SlightPenLighter.UI
 {
+    using System;
+    using System.ComponentModel;
+    using System.IO;
+    using System.Runtime.CompilerServices;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Media;
+    using System.Windows.Shapes;
+    using System.Windows.Threading;
+
+    using SlightPenLighter.Annotations;
+    using SlightPenLighter.Hooks;
+    using SlightPenLighter.Models;
+
     public partial class OptionWindow : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public void InvokeNotify(string propertyName)
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
+        public PenHighlighter Highlighter { get; private set; }
 
-        public PenHighlighter Highlighter
-        {
-            get;
-            private set;
-        }
-
-        private double _size = 30;
+        private double size = 30;
 
         public double Size
         {
-            get
-            {
-                return _size;
-            }
+            get { return size; }
             set
             {
-                _size = value;
-                Shape.Height = _size;
-                Shape.Width = _size;
-                RemoteShape.Height = _size;
-                RemoteShape.Width = _size;
+                size = value;
+                Shape.Height = size;
+                Shape.Width = size;
+                RemoteShape.Height = size;
+                RemoteShape.Width = size;
                 CenterCanvasItem(Shape);
                 CenterCanvasItem(RemoteShape);
-                InvokeNotify("Size");
+                OnPropertyChanged();
             }
         }
 
-        public Shape RemoteShape
-        {
-            get;
-            private set;
-        }
+        public Shape Shape { get; private set; }
+
+        public Shape RemoteShape { get; private set; }
 
         public OptionWindow(PenHighlighter highlighter)
         {
@@ -76,12 +64,19 @@ namespace SlightPenLighter.UI
 
         private void LoadLighter()
         {
-            RemoteShape = Highlighter.Shape;
+            Shape = new Ellipse
+            {
+                Fill = Picker.ColorBrush
+            };
 
-            Shape.Fill = Picker.ColorBrush;
-            RemoteShape.Fill = Picker.ColorBrush;
+            RemoteShape = new Ellipse
+            {
+                Fill = Picker.ColorBrush,
+                Style = (Style) Highlighter.Resources["PulseStyle"] // TODO: Strongly type this.
+            };
 
-            DataContext = this;
+            Canvas.Children.Add(Shape);
+            Highlighter.Canvas.Children.Add(RemoteShape);
 
             Size = 30;
 
@@ -94,7 +89,7 @@ namespace SlightPenLighter.UI
 
             if (file.Exists)
             {
-                var data = Save.DeserializeObject(file.FullName);
+                var data = Save.DeserializeObject(file.FullName); // TODO: Why did I use binary serialization again? Let's use JSON in the future. 
 
                 Picker.Color = new Color
                 {
@@ -109,7 +104,6 @@ namespace SlightPenLighter.UI
 
         public void SaveSettings()
         {
-
             var file = new FileInfo("settings.db");
 
             var data = new Save
@@ -128,6 +122,16 @@ namespace SlightPenLighter.UI
         {
             SaveSettings();
             Hide();
+        }
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
     }
 }
